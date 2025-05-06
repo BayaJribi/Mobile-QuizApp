@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.quiz_app"
+    namespace "com.example.quiz_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
