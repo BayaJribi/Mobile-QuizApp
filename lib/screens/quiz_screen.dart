@@ -1,3 +1,4 @@
+// ... all your original imports
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -25,14 +26,23 @@ class _QuizScreenState extends State<QuizScreen> {
   late Timer timer;
   int timeLeft = 10;
 
+  late String category;
+  late String categoryName; // ✅ added
+  late String difficulty;
+  late int amount;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    category = args['category'];
+    categoryName = args['category_name'] ?? 'unknown'; // ✅ added
+    difficulty = args['difficulty'];
+    amount = args['amount'];
     _fetchQuestions(
-      category: args['category'],
-      difficulty: args['difficulty'],
-      amount: args['amount'],
+      category: category,
+      difficulty: difficulty,
+      amount: amount,
     );
   }
 
@@ -95,6 +105,8 @@ class _QuizScreenState extends State<QuizScreen> {
         Navigator.pushNamed(context, '/result', arguments: {
           'score': score,
           'total': questions.length,
+          'category_name': categoryName, // ✅ changed from category ID to name
+          'difficulty': difficulty,
         });
       }
     });
@@ -122,6 +134,8 @@ class _QuizScreenState extends State<QuizScreen> {
         Navigator.pushNamed(context, '/result', arguments: {
           'score': score,
           'total': questions.length,
+          'category_name': categoryName, // ✅ changed from category ID to name
+          'difficulty': difficulty,
         });
       }
     });
@@ -193,7 +207,6 @@ class _QuizScreenState extends State<QuizScreen> {
                       return Colors.white;
                     }),
                   ),
-
                   onPressed: answered ? null : () => checkAnswer(ans),
                   child: Text(unescape.convert(ans)),
                 ),

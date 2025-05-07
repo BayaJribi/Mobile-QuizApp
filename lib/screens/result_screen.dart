@@ -1,20 +1,45 @@
 import 'package:flutter/material.dart';
+import '../services/local_storage_service.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   final int score;
   final int total;
 
-  const ResultScreen({
-    super.key,
-    required this.score,
-    required this.total,
-  });
+  const ResultScreen({super.key, required this.score, required this.total});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  bool saved = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!saved) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map?;
+      final int finalScore = args?['score'] ?? widget.score;
+      final int finalTotal = args?['total'] ?? widget.total;
+      final String categoryName = args?['category_name'] ?? 'unknown';
+      final String difficulty = args?['difficulty'] ?? 'unknown';
+
+      LocalStorageService.saveScore(
+        category: categoryName, // ✅ send category name not ID
+        difficulty: difficulty,
+        score: finalScore,
+        total: finalTotal,
+      );
+
+      saved = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
-    final int finalScore = args?['score'] ?? score;
-    final int finalTotal = args?['total'] ?? total;
+    final int finalScore = args?['score'] ?? widget.score;
+    final int finalTotal = args?['total'] ?? widget.total;
     final double percent = finalScore / finalTotal * 100;
 
     String getMessage() {

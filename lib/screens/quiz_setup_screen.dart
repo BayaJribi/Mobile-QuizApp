@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class QuizSetupScreen extends StatefulWidget {
   const QuizSetupScreen({super.key});
@@ -9,107 +10,94 @@ class QuizSetupScreen extends StatefulWidget {
 }
 
 class _QuizSetupScreenState extends State<QuizSetupScreen> {
-  List<Map<String, dynamic>> _categories = [];
-  String? _selectedCategory;
-  String _selectedDifficulty = 'easy';
-  int _selectedAmount = 5;
+  List<Map<String, dynamic>> categories = [];
+  final List<String> difficulties = ['easy', 'medium', 'hard'];
+  final List<int> numberOptions = [5, 10, 15, 20];
+
+  String? selectedCategoryId;
+  String? selectedCategoryName;
+  String? selectedDifficulty;
+  int? selectedAmount;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCategories();
+    fetchCategories();
   }
 
-  Future<void> _loadCategories() async {
-    try {
-      final categories = await ApiService.fetchCategories();
-      setState(() {
-        _categories = categories;
-        if (_categories.isNotEmpty) {
-          _selectedCategory = _categories.first['id'].toString();
-        }
-      });
-    } catch (e) {
-      debugPrint('Erreur lors du chargement des catégories: \$e');
-    }
+  Future<void> fetchCategories() async {
+    final url = Uri.parse('https://opentdb.com/api_category.php');
+    final response = await http.get(url);
+    final data = json.decode(response.body);
+
+    setState(() {
+      categories = List<Map<String, dynamic>>.from(data['trivia_categories']);
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configuration du Quiz')),
-      body: _categories.isEmpty
+      appBar: AppBar(title: const Text('Paramètres du quiz')),
+      body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text('Catégorie :'),
-            DropdownButton<String>(
-              value: _selectedCategory,
-              isExpanded: true,
-              items: _categories.map((category) {
-                return DropdownMenuItem(
-                  value: category['id'].toString(),
-                  child: Text(category['name']),
-                );
-              }).toList(),
-              onChanged: (value) {
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(labelText: "Catégorie"),
+              items: categories
+                  .map((cat) => DropdownMenuItem<String>(
+                value: cat['id'].toString(),
+                child: Text(cat['name']),
+              ))
+                  .toList(),
+              onChanged: (val) {
+                final selectedCat = categories.firstWhere((cat) => cat['id'].toString() == val);
                 setState(() {
-                  _selectedCategory = value;
+                  selectedCategoryId = val;
+                  selectedCategoryName = selectedCat['name'];
                 });
               },
+              value: selectedCategoryId,
             ),
-            const SizedBox(height: 20),
-            const Text('Difficulté :'),
-            DropdownButton<String>(
-              value: _selectedDifficulty,
-              isExpanded: true,
-              items: ['easy', 'medium', 'hard'].map((level) {
-                return DropdownMenuItem(
-                  value: level,
-                  child: Text(level),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedDifficulty = value!;
-                });
-              },
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(labelText: "Difficulté"),
+              items: difficulties
+                  .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedDifficulty = val),
+              value: selectedDifficulty,
             ),
-            const SizedBox(height: 20),
-            const Text('Nombre de questions :'),
-            DropdownButton<int>(
-              value: _selectedAmount,
-              isExpanded: true,
-              items: [5, 10, 15, 20].map((number) {
-                return DropdownMenuItem(
-                  value: number,
-                  child: Text('$number'),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedAmount = value!;
-                });
-              },
+            const SizedBox(height: 16),
+            DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: "Nombre de questions"),
+              items: numberOptions
+                  .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
+                  .toList(),
+              onChanged: (val) => setState(() => selectedAmount = val),
+              value: selectedAmount,
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () {
-                if (_selectedCategory != null) {
-                  Navigator.pushNamed(
-                    context,
-                    '/quiz',
-                    arguments: {
-                      'category': _selectedCategory,
-                      'difficulty': _selectedDifficulty,
-                      'amount': _selectedAmount,
-                    },
-                  );
-                }
-              },
-              child: const Text('Démarrer le quiz'),
+              onPressed: (selectedCategoryId != null &&
+                  selectedCategoryName != null &&
+                  selectedDifficulty != null &&
+                  selectedAmount != null)
+                  ? () {
+                Navigator.pushNamed(context, '/quiz', arguments: {
+                  'category': selectedCategoryId,
+                  'category_name': selectedCategoryName, // ✅ this fixes leaderboard name
+                  'difficulty': selectedDifficulty,
+                  'amount': selectedAmount,
+                });
+              }
+                  : null,
+              child: const Text("Démarrer"),
             ),
           ],
         ),

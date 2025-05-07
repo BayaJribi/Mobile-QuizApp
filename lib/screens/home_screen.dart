@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'quiz_setup_screen.dart';
+import 'about_screen.dart';
+import 'leaderboard_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,12 +16,32 @@ class HomeScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               child: const Text("Commencer un quiz"),
-              onPressed: () => Navigator.pushNamed(context, '/setup'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const QuizSetupScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              child: const Text("Classement"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
+                );
+              },
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               child: const Text("À propos"),
-              onPressed: () => Navigator.pushNamed(context, '/about'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                );
+              },
             ),
           ],
         ),

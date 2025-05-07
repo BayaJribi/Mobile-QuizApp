@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'screens/leaderboard_screen.dart';
 import 'screens/quiz_setup_screen.dart';
 import 'screens/quiz_screen.dart';
 import 'screens/result_screen.dart';
@@ -27,6 +28,8 @@ class QuizApp extends StatelessWidget {
         '/quiz': (context) => const QuizScreen(),
         '/result': (context) => const ResultScreen(score: 0, total: 0),
         '/about': (context) => const AboutScreen(),
+        '/leaderboard': (context) => const LeaderboardScreen(),
+
       },
     );
   }
