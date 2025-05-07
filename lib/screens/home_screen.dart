@@ -1,45 +1,46 @@
 import 'package:flutter/material.dart';
-import 'quiz_setup_screen.dart';
-import 'about_screen.dart';
-import 'leaderboard_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final VoidCallback toggleTheme;
+  final bool isDark;
+
+  const HomeScreen({super.key, required this.toggleTheme, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Accueil')),
+      appBar: AppBar(
+        title: const Text('Accueil'),
+        actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            tooltip: isDark ? 'Passer au mode clair' : 'Passer au mode sombre',
+            onPressed: toggleTheme,
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
               child: const Text("Commencer un quiz"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const QuizSetupScreen()),
-                );
-              },
+              onPressed: () => Navigator.pushNamed(context, '/setup'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               child: const Text("Classement"),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
-                );
-              },
+              onPressed: () => Navigator.pushNamed(context, '/leaderboard'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               child: const Text("À propos"),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                showAboutDialog(
+                  context: context,
+                  applicationName: "Quiz App",
+                  applicationVersion: "1.0",
+                  children: [const Text("Application de quiz Flutter.")],
                 );
               },
             ),
