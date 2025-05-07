@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
+import 'dart:async';
 import 'package:html_unescape/html_unescape.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -20,6 +21,9 @@ class _QuizScreenState extends State<QuizScreen> {
   bool isLoading = true;
   bool answered = false;
   String? selectedAnswer;
+
+  late Timer timer;
+  int timeLeft = 10;
 
   @override
   void didChangeDependencies() {
@@ -47,6 +51,7 @@ class _QuizScreenState extends State<QuizScreen> {
         }
         isLoading = false;
       });
+      _startTimer();
     } catch (e) {
       debugPrint('Erreur chargement questions : $e');
     }
@@ -59,7 +64,44 @@ class _QuizScreenState extends State<QuizScreen> {
     return answers;
   }
 
+  void _startTimer() {
+    timeLeft = 10;
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          timer.cancel();
+          _autoNextQuestion();
+        }
+      });
+    });
+  }
+
+  void _autoNextQuestion() {
+    setState(() {
+      answered = true;
+      selectedAnswer = null;
+    });
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (currentIndex < questions.length - 1) {
+        setState(() {
+          currentIndex++;
+          answered = false;
+          selectedAnswer = null;
+        });
+        _startTimer();
+      } else {
+        Navigator.pushNamed(context, '/result', arguments: {
+          'score': score,
+          'total': questions.length,
+        });
+      }
+    });
+  }
+
   void checkAnswer(String answer) {
+    timer.cancel();
     setState(() {
       answered = true;
       selectedAnswer = answer;
@@ -75,6 +117,7 @@ class _QuizScreenState extends State<QuizScreen> {
           answered = false;
           selectedAnswer = null;
         });
+        _startTimer();
       } else {
         Navigator.pushNamed(context, '/result', arguments: {
           'score': score,
@@ -82,6 +125,12 @@ class _QuizScreenState extends State<QuizScreen> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    if (timer.isActive) timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -108,20 +157,21 @@ class _QuizScreenState extends State<QuizScreen> {
               unescape.convert(question['question']),
               style: const TextStyle(fontSize: 20),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            Text(
+              'Temps restant : $timeLeft s',
+              style: const TextStyle(fontSize: 16, color: Colors.red),
+            ),
+            const SizedBox(height: 20),
             ...answers.map((ans) {
               final isCorrect = ans == correct;
               final isSelected = ans == selectedAnswer;
 
               Color? bgColor;
               if (answered) {
-                if (isCorrect) {
-                  bgColor = Colors.green;
-                } else if (isSelected) {
-                  bgColor = Colors.red;
-                } else {
-                  bgColor = Colors.grey[300];
-                }
+                if (isCorrect) bgColor = Colors.green;
+                else if (isSelected) bgColor = Colors.red;
+                else bgColor = Colors.grey[300];
               }
 
               return Container(
@@ -130,24 +180,24 @@ class _QuizScreenState extends State<QuizScreen> {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: bgColor ?? Colors.blue,
-                    foregroundColor: Colors.white,
+                    foregroundColor: (bgColor == Colors.grey[300]) ? Colors.black : Colors.white,
                   ).copyWith(
-                    // Fix pour garder la couleur même quand on est disabled
                     backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
                       if (states.contains(MaterialState.disabled)) {
                         return bgColor ?? Colors.blue;
                       }
                       return bgColor ?? Colors.blue;
                     }),
+                    foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                      if (bgColor == Colors.grey[300]) return Colors.black;
+                      return Colors.white;
+                    }),
                   ),
+
                   onPressed: answered ? null : () => checkAnswer(ans),
-                  child: Text(
-                    unescape.convert(ans),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text(unescape.convert(ans)),
                 ),
               );
-
             }),
           ],
         ),
