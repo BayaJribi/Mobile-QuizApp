@@ -1,10 +1,12 @@
-// ... all your original imports
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
 import 'dart:async';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:vibration/vibration.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -15,6 +17,7 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   final unescape = HtmlUnescape();
+  final player = AudioPlayer();
   List<Map<String, dynamic>> questions = [];
   Map<int, List<String>> shuffledAnswers = {};
   int currentIndex = 0;
@@ -27,7 +30,7 @@ class _QuizScreenState extends State<QuizScreen> {
   int timeLeft = 10;
 
   late String category;
-  late String categoryName; // ✅ added
+  late String categoryName;
   late String difficulty;
   late int amount;
 
@@ -36,7 +39,7 @@ class _QuizScreenState extends State<QuizScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     category = args['category'];
-    categoryName = args['category_name'] ?? 'unknown'; // ✅ added
+    categoryName = args['category_name'] ?? 'unknown';
     difficulty = args['difficulty'];
     amount = args['amount'];
     _fetchQuestions(
@@ -74,6 +77,30 @@ class _QuizScreenState extends State<QuizScreen> {
     return answers;
   }
 
+  Future<void> playSound(String type) async {
+    try {
+      debugPrint("🔊 Trying to play: sounds/$type.mp3");
+      await player.stop();
+      await player.play(AssetSource('sounds/$type.mp3'));
+      debugPrint("🎵 play success");
+    } catch (e) {
+      debugPrint('❌ Erreur lecture son: $e');
+    }
+  }
+
+  Future<void> vibrate() async {
+    try {
+      debugPrint("📳 Attempting vibration");
+      if (await Vibration.hasVibrator() ?? false) {
+        Vibration.vibrate(duration: 300);
+      } else {
+        debugPrint("⚠️ No vibrator available");
+      }
+    } catch (e) {
+      debugPrint('❌ Erreur vibration: $e');
+    }
+  }
+
   void _startTimer() {
     timeLeft = 10;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -105,22 +132,28 @@ class _QuizScreenState extends State<QuizScreen> {
         Navigator.pushNamed(context, '/result', arguments: {
           'score': score,
           'total': questions.length,
-          'category_name': categoryName, // ✅ changed from category ID to name
+          'category_name': categoryName,
           'difficulty': difficulty,
         });
       }
     });
   }
 
-  void checkAnswer(String answer) {
+  Future<void> checkAnswer(String answer) async {
     timer.cancel();
     setState(() {
       answered = true;
       selectedAnswer = answer;
-      if (answer == questions[currentIndex]['correct_answer']) {
-        score++;
-      }
     });
+
+    final correctAnswer = questions[currentIndex]['correct_answer'];
+    if (answer == correctAnswer) {
+      score++;
+      await playSound('right');
+    } else {
+      await playSound('wrong');
+      await vibrate();
+    }
 
     Future.delayed(const Duration(seconds: 1), () {
       if (currentIndex < questions.length - 1) {
@@ -134,7 +167,7 @@ class _QuizScreenState extends State<QuizScreen> {
         Navigator.pushNamed(context, '/result', arguments: {
           'score': score,
           'total': questions.length,
-          'category_name': categoryName, // ✅ changed from category ID to name
+          'category_name': categoryName,
           'difficulty': difficulty,
         });
       }
@@ -144,11 +177,14 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void dispose() {
     if (timer.isActive) timer.cancel();
+    player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -161,7 +197,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Question ${currentIndex + 1}/${questions.length}'),
+        title: Text('${loc.question} ${currentIndex + 1}/${questions.length}'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -173,7 +209,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Temps restant : $timeLeft s',
+              '${loc.timeLeft}: $timeLeft s',
               style: const TextStyle(fontSize: 16, color: Colors.red),
             ),
             const SizedBox(height: 20),

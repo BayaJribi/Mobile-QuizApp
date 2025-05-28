@@ -1,0 +1,28 @@
+{
+  "@@locale": "ar",
+  "appTitle": "تطبيق الاختبار",
+  "startQuiz": "ابدأ الاختبار",
+  "leaderboard": "التصنيف",
+  "about": "حول",
+  "darkMode": "الوضع الداكن",
+  "lightMode": "الوضع الفاتح",
+  "resetLeaderboard": "إعادة تعيين التصنيف",
+  "noScores": "لا توجد نتائج مسجلة",
+  "category": "الفئة",
+  "score": "النتيجة",
+  "quizSettings": "إعدادات الاختبار",
+  "difficulty": "الصعوبة",
+  "numberOfQuestions": "عدد الأسئلة",
+  "results": "النتائج",
+  "yourScore": "درجتك",
+  "perfect": "رائع!",
+  "excellent": "ممتاز 👏",
+  "wellDone": "أحسنت 👍",
+  "notBad": "لا بأس 😅",
+  "canDoBetter": "يمكنك أن تكون أفضل...",
+  "retry": "إعادة المحاولة",
+  "backToHome": "العودة إلى الصفحة الرئيسية",
+  "question": "السؤال",
+  "timeLeft": "الوقت المتبقي"
+
+}

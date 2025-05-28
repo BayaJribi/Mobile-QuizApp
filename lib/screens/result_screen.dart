@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/local_storage_service.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -25,7 +26,7 @@ class _ResultScreenState extends State<ResultScreen> {
       final String difficulty = args?['difficulty'] ?? 'unknown';
 
       LocalStorageService.saveScore(
-        category: categoryName, // ✅ send category name not ID
+        category: categoryName,
         difficulty: difficulty,
         score: finalScore,
         total: finalTotal,
@@ -37,21 +38,22 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final args = ModalRoute.of(context)!.settings.arguments as Map?;
     final int finalScore = args?['score'] ?? widget.score;
     final int finalTotal = args?['total'] ?? widget.total;
     final double percent = finalScore / finalTotal * 100;
 
     String getMessage() {
-      if (percent == 100) return "Parfait !";
-      if (percent >= 80) return "Excellent 👏";
-      if (percent >= 60) return "Bien joué 👍";
-      if (percent >= 40) return "Pas mal 😅";
-      return "Tu peux mieux faire...";
+      if (percent == 100) return loc.perfect;
+      if (percent >= 80) return loc.excellent;
+      if (percent >= 60) return loc.wellDone;
+      if (percent >= 40) return loc.notBad;
+      return loc.canDoBetter;
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Résultats')),
+      appBar: AppBar(title: Text(loc.results)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -59,7 +61,7 @@ class _ResultScreenState extends State<ResultScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Ton score : $finalScore / $finalTotal',
+                '${loc.yourScore}: $finalScore / $finalTotal',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
@@ -72,14 +74,14 @@ class _ResultScreenState extends State<ResultScreen> {
                 onPressed: () {
                   Navigator.pushReplacementNamed(context, '/setup');
                 },
-                child: const Text('Rejouer'),
+                child: Text(loc.retry),
               ),
               const SizedBox(height: 12),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
                 },
-                child: const Text("Retour à l'accueil"),
+                child: Text(loc.backToHome),
               ),
             ],
           ),

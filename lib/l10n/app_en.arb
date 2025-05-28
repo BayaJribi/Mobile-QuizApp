@@ -1,0 +1,28 @@
+{
+  "@@locale": "en",
+  "appTitle": "Quiz App",
+  "startQuiz": "Start Quiz",
+  "leaderboard": "Leaderboard",
+  "about": "About",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "resetLeaderboard": "Reset leaderboard",
+  "noScores": "No scores recorded",
+  "category": "Category",
+  "score": "Score",
+  "quizSettings": "Quiz Settings",
+  "difficulty": "Difficulty",
+  "numberOfQuestions": "Number of Questions",
+  "results": "Results",
+  "yourScore": "Your score",
+  "perfect": "Perfect!",
+  "excellent": "Excellent 👏",
+  "wellDone": "Well done 👍",
+  "notBad": "Not bad 😅",
+  "canDoBetter": "You can do better...",
+  "retry": "Retry",
+  "backToHome": "Back to Home",
+  "question": "Question",
+  "timeLeft": "Time left"
+
+}

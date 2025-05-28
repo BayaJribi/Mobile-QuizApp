@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -39,8 +40,10 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Paramètres du quiz')),
+      appBar: AppBar(title: Text(loc.quizSettings)),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -48,7 +51,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
         child: Column(
           children: [
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: "Catégorie"),
+              decoration: InputDecoration(labelText: loc.category),
               items: categories
                   .map((cat) => DropdownMenuItem<String>(
                 value: cat['id'].toString(),
@@ -66,7 +69,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: "Difficulté"),
+              decoration: InputDecoration(labelText: loc.difficulty),
               items: difficulties
                   .map((d) => DropdownMenuItem(value: d, child: Text(d)))
                   .toList(),
@@ -75,7 +78,7 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<int>(
-              decoration: const InputDecoration(labelText: "Nombre de questions"),
+              decoration: InputDecoration(labelText: loc.numberOfQuestions),
               items: numberOptions
                   .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
                   .toList(),
@@ -91,13 +94,13 @@ class _QuizSetupScreenState extends State<QuizSetupScreen> {
                   ? () {
                 Navigator.pushNamed(context, '/quiz', arguments: {
                   'category': selectedCategoryId,
-                  'category_name': selectedCategoryName, // ✅ this fixes leaderboard name
+                  'category_name': selectedCategoryName,
                   'difficulty': selectedDifficulty,
                   'amount': selectedAmount,
                 });
               }
                   : null,
-              child: const Text("Démarrer"),
+              child: Text(loc.startQuiz),
             ),
           ],
         ),

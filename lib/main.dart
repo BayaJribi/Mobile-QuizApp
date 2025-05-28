@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'services/theme_service.dart';
+import 'services/locale_service.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/quiz_setup_screen.dart';
 import 'screens/quiz_screen.dart';
@@ -20,17 +25,20 @@ class QuizApp extends StatefulWidget {
 class _QuizAppState extends State<QuizApp> {
   bool isDarkMode = false;
   bool loading = true;
+  Locale? _currentLocale;
 
   @override
   void initState() {
     super.initState();
-    _loadTheme();
+    _initializeSettings();
   }
 
-  Future<void> _loadTheme() async {
+  Future<void> _initializeSettings() async {
     final theme = await ThemeService.loadTheme();
+    final locale = await LocaleService.loadLocale();
     setState(() {
       isDarkMode = theme;
+      _currentLocale = locale;
       loading = false;
     });
   }
@@ -40,6 +48,13 @@ class _QuizAppState extends State<QuizApp> {
       isDarkMode = !isDarkMode;
     });
     ThemeService.saveTheme(isDarkMode);
+  }
+
+  void _changeLocale(Locale locale) {
+    LocaleService.saveLocale(locale.languageCode);
+    setState(() {
+      _currentLocale = locale;
+    });
   }
 
   @override
@@ -52,6 +67,8 @@ class _QuizAppState extends State<QuizApp> {
 
     return MaterialApp(
       title: 'Quiz App',
+      debugShowCheckedModeBanner: false,
+      locale: _currentLocale,
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -59,12 +76,40 @@ class _QuizAppState extends State<QuizApp> {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(toggleTheme: toggleTheme, isDark: isDarkMode),
+
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('fr'),
+        Locale('ar'),
+      ],
+      localeResolutionCallback: (locale, supportedLocales) {
+        for (var supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale?.languageCode) {
+            return supportedLocale;
+          }
+        }
+        return supportedLocales.first;
+      },
+
+      home: HomeScreen(
+        toggleTheme: toggleTheme,
+        isDark: isDarkMode,
+        changeLocale: _changeLocale,
+        currentLocale: _currentLocale,
+      ),
       routes: {
         '/setup': (context) => const QuizSetupScreen(),
         '/quiz': (context) => const QuizScreen(),

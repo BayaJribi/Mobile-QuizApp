@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../services/local_storage_service.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -31,26 +32,28 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Classement'),
+        title: Text(loc.leaderboard),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: _clearScores,
-            tooltip: 'Réinitialiser le classement',
+            tooltip: loc.resetLeaderboard,
           ),
         ],
       ),
       body: scores.isEmpty
-          ? const Center(child: Text("Aucun score enregistré"))
+          ? Center(child: Text(loc.noScores))
           : ListView.builder(
         itemCount: scores.length,
         itemBuilder: (context, index) {
           final s = scores[index];
           return ListTile(
-            title: Text("Catégorie: ${s['category']} - ${s['difficulty']}"),
-            subtitle: Text("Score: ${s['score']} / ${s['total']}"),
+            title: Text("${loc.category}: ${s['category']} - ${s['difficulty']}"),
+            subtitle: Text("${loc.score}: ${s['score']} / ${s['total']}"),
             trailing: Text(
               s['timestamp'].toString().split('T').first,
               style: const TextStyle(fontSize: 12),
