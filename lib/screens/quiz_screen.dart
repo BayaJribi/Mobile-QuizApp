@@ -7,9 +7,12 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:vibration/vibration.dart';
+import '../Models/settings.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen({super.key});
+  final Settings settings;
+
+  const QuizScreen({super.key, required this.settings});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -147,12 +150,17 @@ class _QuizScreenState extends State<QuizScreen> {
     });
 
     final correctAnswer = questions[currentIndex]['correct_answer'];
+
     if (answer == correctAnswer) {
       score++;
-      await playSound('right');
+      if (widget.settings.enableSound) {
+        await playSound('right');
+      }
     } else {
-      await playSound('wrong');
-      await vibrate();
+      if (widget.settings.enableSound) {
+        await playSound('wrong');
+      }
+      await vibrate(); // You may also check for sound here if needed
     }
 
     Future.delayed(const Duration(seconds: 1), () {

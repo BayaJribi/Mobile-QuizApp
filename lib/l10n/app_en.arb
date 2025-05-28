@@ -6,6 +6,7 @@
   "about": "About",
   "darkMode": "Dark Mode",
   "lightMode": "Light Mode",
+  "theme": "Theme",
   "resetLeaderboard": "Reset leaderboard",
   "noScores": "No scores recorded",
   "category": "Category",
@@ -23,6 +24,8 @@
   "retry": "Retry",
   "backToHome": "Back to Home",
   "question": "Question",
-  "timeLeft": "Time left"
-
+  "timeLeft": "Time left",
+  "settings": "Settings",
+  "language": "Language",
+  "sound": "Sound"
 }
